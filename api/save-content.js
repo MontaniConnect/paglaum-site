@@ -54,10 +54,17 @@ module.exports = async function handler(req, res) {
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch { body = {}; }
   }
-  const { password, content } = body || {};
+  const { password, content, verifyOnly } = body || {};
 
   if (!password || !timingSafeEqual(password, EDIT_PASSWORD)) {
     res.status(401).json({ ok: false, error: 'Wrong password.' });
+    return;
+  }
+
+  // The editor's gate calls this with verifyOnly to check the password
+  // immediately, before touching GitHub at all.
+  if (verifyOnly) {
+    res.status(200).json({ ok: true });
     return;
   }
 

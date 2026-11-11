@@ -27,23 +27,50 @@ const panel = document.getElementById('section-panel');
 const statusEl = document.getElementById('status');
 const logoutLink = document.getElementById('logout-link');
 
-function unlock(password) {
-  if (!password) {
-    gateError.textContent = 'Enter the password first.';
-    return;
-  }
+// Checks the password against the backend before ever showing the editor —
+// the gate used to accept anything and only fail later on Save, which was
+// confusing. Returns true/false.
+async function verifyPassword(password) {
+  const r = await fetch(window.EDIT_API_BASE.replace(/\/$/, '') + '/api/save-content', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password, verifyOnly: true }),
+  });
+  const result = await r.json().catch(() => ({}));
+  return !!(r.ok && result.ok);
+}
+
+function enterApp(password) {
   sharedPassword = password;
   gate.style.display = 'none';
   app.style.display = 'flex';
   loadContent();
 }
 
-gateSubmit.addEventListener('click', () => {
+gateSubmit.addEventListener('click', async () => {
   const password = gatePassword.value.trim();
-  if (password) {
-    try { localStorage.setItem(PASSWORD_STORAGE_KEY, password); } catch { /* storage may be unavailable; still works for this session */ }
+  if (!password) {
+    gateError.textContent = 'Enter the password first.';
+    return;
   }
-  unlock(password);
+  gateSubmit.disabled = true;
+  gateError.textContent = 'Checking…';
+  let ok = false;
+  try {
+    ok = await verifyPassword(password);
+  } catch (err) {
+    gateError.textContent = 'Could not reach the server: ' + err.message;
+    gateSubmit.disabled = false;
+    return;
+  }
+  gateSubmit.disabled = false;
+  if (!ok) {
+    gateError.textContent = 'Wrong password.';
+    return;
+  }
+  gateError.textContent = '';
+  try { localStorage.setItem(PASSWORD_STORAGE_KEY, password); } catch { /* storage may be unavailable; still works for this session */ }
+  enterApp(password);
 });
 gatePassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') gateSubmit.click(); });
 
@@ -53,11 +80,19 @@ logoutLink.addEventListener('click', (e) => {
   location.reload();
 });
 
-// Auto-unlock if a password is already remembered in this browser.
-(function tryAutoUnlock() {
+// Auto-unlock if a password is already remembered in this browser — but
+// still re-verify it, in case the password was changed since it was saved.
+(async function tryAutoUnlock() {
   let remembered = null;
   try { remembered = localStorage.getItem(PASSWORD_STORAGE_KEY); } catch { /* ignore */ }
-  if (remembered) unlock(remembered);
+  if (!remembered) return;
+  let ok = false;
+  try { ok = await verifyPassword(remembered); } catch { /* treat unreachable server as "can't confirm", fall back to the gate */ }
+  if (ok) {
+    enterApp(remembered);
+  } else {
+    try { localStorage.removeItem(PASSWORD_STORAGE_KEY); } catch { /* ignore */ }
+  }
 })();
 
 function loadContent() {
