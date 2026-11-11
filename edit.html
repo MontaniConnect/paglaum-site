@@ -13,18 +13,64 @@
   }
   *,*::before,*::after{ box-sizing:border-box; }
   body{ margin:0; font-family:"Inter",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
-  .wrap{ max-width:860px; margin:0 auto; padding:32px 20px 100px; }
-  h1{ font-size:22px; margin:0 0 4px; }
-  .subtitle{ color:var(--ink-soft); font-size:14px; margin:0 0 28px; }
 
   /* password gate */
   #gate{ max-width:360px; margin:80px auto; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; text-align:center; }
+  #gate h1{ font-size:20px; margin:0 0 4px; }
   #gate p{ color:var(--ink-soft); font-size:14px; }
   #gate input{ width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:8px; font-size:15px; margin:14px 0; }
   #gate-error{ color:var(--danger); font-size:13px; min-height:18px; }
 
-  fieldset{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin:0 0 20px; }
-  legend{ font-weight:700; font-size:15px; padding:0 8px; color:var(--navy); }
+  #app{ display:none; max-width:1100px; margin:0 auto; padding:0 20px 24px; min-height:100vh; flex-direction:column; }
+
+  .editor-top{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:20px;
+  }
+  .editor-top h1{ font-size:19px; margin:0; }
+  .editor-top a{ color:var(--teal-dark); font-weight:600; font-size:14px; text-decoration:none; }
+  .editor-top a:hover{ text-decoration:underline; }
+
+  .editor-body{ display:flex; gap:24px; flex:1; align-items:flex-start; }
+
+  .section-nav{
+    flex:0 0 220px; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:10px; position:sticky; top:20px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:8px;
+    padding:10px 12px; border-radius:8px; cursor:pointer; font-size:14px;
+    user-select:none;
+  }
+  .nav-item:hover{ background:#f0f3f5; }
+  .nav-item.active{ background:var(--teal); color:#fff; font-weight:600; }
+  .nav-item .handle{ opacity:.4; cursor:grab; flex-shrink:0; }
+  .nav-item.active .handle{ opacity:.8; }
+  .nav-item .nav-label{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .nav-item.dragging{ opacity:.4; }
+  .nav-item.drag-over{ box-shadow: inset 0 2px 0 var(--teal-dark); }
+  .nav-divider{ height:1px; background:var(--border); margin:8px 4px; }
+  .add-section-btn{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    padding:10px 12px; font-size:14px; color:var(--teal-dark); font-weight:600; font-family:inherit;
+  }
+  .add-section-btn:hover{ text-decoration:underline; }
+
+  .section-panel{
+    flex:1; min-width:0; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:22px 24px;
+  }
+  .panel-header{ display:flex; align-items:flex-start; gap:12px; margin-bottom:16px; }
+  .panel-title-input{
+    flex:1; font-size:18px; font-weight:700; border:1px solid transparent; border-radius:8px;
+    padding:6px 8px; font-family:inherit; color:var(--navy); background:transparent;
+  }
+  .panel-title-input:hover, .panel-title-input:focus{ border-color:var(--border); background:#fcfdfd; }
+  .btn-delete-section{
+    background:#fdeceb; color:var(--danger); border:1px solid #f3c9c4; border-radius:8px;
+    font-size:13px; font-weight:600; padding:8px 12px; cursor:pointer; font-family:inherit; flex-shrink:0;
+  }
+
   .field{ margin-bottom:14px; }
   .field:last-child{ margin-bottom:0; }
   label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.03em; }
@@ -40,21 +86,29 @@
   .item-head input{ font-weight:600; }
   .btn{ font-family:inherit; cursor:pointer; border-radius:8px; font-size:13px; font-weight:600; padding:8px 14px; border:1px solid transparent; }
   .btn-remove{ background:#fdeceb; color:var(--danger); border-color:#f3c9c4; flex-shrink:0; }
-  .btn-add{ background:#eef2f5; color:var(--navy); border-color:var(--border); }
+  .btn-add{ background:#eef2f5; color:var(--navy); border-color:var(--border); margin-top:4px; }
   .btn-primary{ background:var(--teal); color:#fff; }
   .btn-primary:hover{ background:var(--teal-dark); }
   .btn-primary:disabled{ opacity:.6; cursor:default; }
 
   .save-bar{
     position:sticky; bottom:0; background:rgba(245,247,248,.95); backdrop-filter:blur(6px);
-    border-top:1px solid var(--border); padding:14px 20px; margin:0 -20px;
+    border-top:1px solid var(--border); padding:14px 0; margin-top:20px;
     display:flex; align-items:center; gap:14px; justify-content:flex-end;
   }
   #status{ font-size:13px; flex:1; }
   #status.ok{ color:var(--ok); }
   #status.err{ color:var(--danger); }
 
-  #app{ display:none; }
+  @media (max-width: 720px){
+    .editor-body{ flex-direction:column; }
+    .section-nav{
+      position:static; width:100%; flex:none; display:flex; overflow-x:auto;
+      gap:4px; padding:8px;
+    }
+    .nav-divider{ display:none; }
+    .add-section-btn{ width:auto; white-space:nowrap; }
+  }
 </style>
 </head>
 <body>
@@ -67,11 +121,22 @@
   <p id="gate-error"></p>
 </div>
 
-<div class="wrap" id="app">
-  <h1>Edit site content</h1>
-  <p class="subtitle">Changes are committed straight to the live site. They can take a minute to appear after saving.</p>
+<div id="app">
+  <div class="editor-top">
+    <h1>Edit site content</h1>
+    <a href="index.html" target="_blank" id="view-live">View live →</a>
+  </div>
   <div id="loading">Loading current content…</div>
-  <form id="content-form"></form>
+  <form id="content-form" style="display:none">
+    <div class="editor-body">
+      <nav class="section-nav" id="section-nav"></nav>
+      <div class="section-panel" id="section-panel"></div>
+    </div>
+    <div class="save-bar">
+      <span id="status"></span>
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
 </div>
 
 <script>window.EDIT_API_BASE = "https://REPLACE-WITH-YOUR-VERCEL-PROJECT.vercel.app";</script>

@@ -103,14 +103,21 @@ const USAGE_NOTE = `<!--
 -->`;
 
 // Reverse of parseContentMD: turns the structured data back into content.md text.
-function serializeContent(data) {
+// `order` (optional) is an array of section keys controlling both the written
+// file order and data.meta.section_order; defaults to the existing key order.
+function serializeContent(data, order) {
+  const sectionOrder = order || Object.keys(data.sections || {});
+  const meta = { ...(data.meta || {}), section_order: sectionOrder.join(',') };
+
   const lines = ['---'];
-  for (const [k, v] of Object.entries(data.meta || {})) {
+  for (const [k, v] of Object.entries(meta)) {
     lines.push(`${k}: ${v}`);
   }
   lines.push('---', '', USAGE_NOTE, '');
 
-  for (const section of Object.values(data.sections || {})) {
+  for (const key of sectionOrder) {
+    const section = (data.sections || {})[key];
+    if (!section) continue;
     lines.push(`## ${section.title}`, '');
     const metaEntries = Object.entries(section.meta || {});
     for (const [k, v] of metaEntries) lines.push(`${k}: ${v}`);

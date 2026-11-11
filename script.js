@@ -313,6 +313,21 @@ function renderSite(data) {
     setText('contact-checkbox-label', s.contact.meta.checkbox_label);
     setText('contact-submit', s.contact.meta.submit_label);
   }
+
+  applySectionOrder(meta.section_order);
+}
+
+// Physically reorders the top-level <section data-section-key="..."> elements
+// to match content.md's section_order, so reordering in the editor is
+// reflected on the live page (header and footer always stay pinned).
+function applySectionOrder(orderStr) {
+  if (!orderStr) return;
+  const footer = document.querySelector('.site-footer');
+  if (!footer) return;
+  orderStr.split(',').map(s => s.trim()).filter(Boolean).forEach(key => {
+    const el = document.querySelector('[data-section-key="' + key + '"]');
+    if (el) footer.parentNode.insertBefore(el, footer);
+  });
 }
 
 fetch('content.md')
