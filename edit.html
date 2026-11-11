@@ -15,7 +15,8 @@
   body{ margin:0; font-family:"Inter",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
 
   /* password gate */
-  #gate{ max-width:360px; margin:80px auto; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; text-align:center; }
+  #gate{ max-width:440px; margin:80px auto; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; text-align:center; }
+  #gate a{ color:var(--teal-dark); }
   #gate h1{ font-size:20px; margin:0 0 4px; }
   #gate p{ color:var(--ink-soft); font-size:14px; }
   #gate input{ width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:8px; font-size:15px; margin:14px 0; }
@@ -115,16 +116,24 @@
 
 <div id="gate">
   <h1>Edit site content</h1>
-  <p>Enter the shared password to edit PAGLAUM's site content.</p>
-  <input type="password" id="gate-password" placeholder="Password" autocomplete="current-password">
+  <p>Paste a GitHub personal access token to edit and save PAGLAUM's site content. It's saved only in this browser.</p>
+  <input type="password" id="gate-password" placeholder="GitHub token (ghp_... or github_pat_...)" autocomplete="off">
   <button class="btn btn-primary" id="gate-submit" style="width:100%">Unlock</button>
   <p id="gate-error"></p>
+  <p style="font-size:12px;color:var(--ink-soft);text-align:left">
+    Need a token? Go to
+    <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>,
+    limit it to the <strong>paglaum-site</strong> repository, and grant <strong>Contents: Read and write</strong> permission. Nothing else is needed.
+  </p>
 </div>
 
 <div id="app">
   <div class="editor-top">
     <h1>Edit site content</h1>
-    <a href="index.html" target="_blank" id="view-live">View live →</a>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <a href="#" id="logout-link" style="color:var(--ink-soft)">Log out</a>
+      <a href="index.html" target="_blank" id="view-live">View live →</a>
+    </div>
   </div>
   <div id="loading">Loading current content…</div>
   <form id="content-form" style="display:none">
@@ -139,7 +148,6 @@
   </form>
 </div>
 
-<script>window.EDIT_API_BASE = "https://REPLACE-WITH-YOUR-VERCEL-PROJECT.vercel.app";</script>
 <script src="content-parser.js"></script>
 <script src="edit.js"></script>
 </body>

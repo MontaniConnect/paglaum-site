@@ -1,6 +1,0 @@
-{
-  "name": "paglaum-site",
-  "private": true,
-  "version": "1.0.0",
-  "description": "PAGLAUM site (static) + a single Vercel function that saves content.md edits to GitHub."
-}
