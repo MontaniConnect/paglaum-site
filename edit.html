@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit site content — PAGLAUM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1c3f5e; --teal:#2fb6c4; --teal-dark:#1f98a5;
+    --bg:#f5f7f8; --surface:#fff; --border:#dbe2e7; --ink:#1c3f5e; --ink-soft:#5a6b78;
+    --danger:#c0392b; --ok:#1f8a4c;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  body{ margin:0; font-family:"Inter",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+  .wrap{ max-width:860px; margin:0 auto; padding:32px 20px 100px; }
+  h1{ font-size:22px; margin:0 0 4px; }
+  .subtitle{ color:var(--ink-soft); font-size:14px; margin:0 0 28px; }
+
+  /* password gate */
+  #gate{ max-width:360px; margin:80px auto; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; text-align:center; }
+  #gate p{ color:var(--ink-soft); font-size:14px; }
+  #gate input{ width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:8px; font-size:15px; margin:14px 0; }
+  #gate-error{ color:var(--danger); font-size:13px; min-height:18px; }
+
+  fieldset{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin:0 0 20px; }
+  legend{ font-weight:700; font-size:15px; padding:0 8px; color:var(--navy); }
+  .field{ margin-bottom:14px; }
+  .field:last-child{ margin-bottom:0; }
+  label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.03em; }
+  input[type=text], textarea{
+    width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px;
+    font-family:inherit; font-size:14px; color:var(--ink); background:#fcfdfd;
+  }
+  textarea{ min-height:80px; resize:vertical; }
+  input:focus, textarea:focus{ outline:2px solid var(--teal); outline-offset:1px; }
+
+  .item-card{ border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:14px; background:#fbfcfd; }
+  .item-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .item-head input{ font-weight:600; }
+  .btn{ font-family:inherit; cursor:pointer; border-radius:8px; font-size:13px; font-weight:600; padding:8px 14px; border:1px solid transparent; }
+  .btn-remove{ background:#fdeceb; color:var(--danger); border-color:#f3c9c4; flex-shrink:0; }
+  .btn-add{ background:#eef2f5; color:var(--navy); border-color:var(--border); }
+  .btn-primary{ background:var(--teal); color:#fff; }
+  .btn-primary:hover{ background:var(--teal-dark); }
+  .btn-primary:disabled{ opacity:.6; cursor:default; }
+
+  .save-bar{
+    position:sticky; bottom:0; background:rgba(245,247,248,.95); backdrop-filter:blur(6px);
+    border-top:1px solid var(--border); padding:14px 20px; margin:0 -20px;
+    display:flex; align-items:center; gap:14px; justify-content:flex-end;
+  }
+  #status{ font-size:13px; flex:1; }
+  #status.ok{ color:var(--ok); }
+  #status.err{ color:var(--danger); }
+
+  #app{ display:none; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1>Edit site content</h1>
+  <p>Enter the shared password to edit PAGLAUM's site content.</p>
+  <input type="password" id="gate-password" placeholder="Password" autocomplete="current-password">
+  <button class="btn btn-primary" id="gate-submit" style="width:100%">Unlock</button>
+  <p id="gate-error"></p>
+</div>
+
+<div class="wrap" id="app">
+  <h1>Edit site content</h1>
+  <p class="subtitle">Changes are committed straight to the live site. They can take a minute to appear after saving.</p>
+  <div id="loading">Loading current content…</div>
+  <form id="content-form"></form>
+</div>
+
+<script>window.EDIT_API_BASE = "https://REPLACE-WITH-YOUR-VERCEL-PROJECT.vercel.app";</script>
+<script src="content-parser.js"></script>
+<script src="edit.js"></script>
+</body>
+</html>
