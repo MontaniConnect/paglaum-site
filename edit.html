@@ -116,15 +116,10 @@
 
 <div id="gate">
   <h1>Edit site content</h1>
-  <p>Paste a GitHub personal access token to edit and save PAGLAUM's site content. It's saved only in this browser.</p>
-  <input type="password" id="gate-password" placeholder="GitHub token (ghp_... or github_pat_...)" autocomplete="off">
+  <p>Enter the shared password to edit PAGLAUM's site content.</p>
+  <input type="password" id="gate-password" placeholder="Password" autocomplete="current-password">
   <button class="btn btn-primary" id="gate-submit" style="width:100%">Unlock</button>
   <p id="gate-error"></p>
-  <p style="font-size:12px;color:var(--ink-soft);text-align:left">
-    Need a token? Go to
-    <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>,
-    limit it to the <strong>paglaum-site</strong> repository, and grant <strong>Contents: Read and write</strong> permission. Nothing else is needed.
-  </p>
 </div>
 
 <div id="app">
@@ -148,6 +143,7 @@
   </form>
 </div>
 
+<script>window.EDIT_API_BASE = "https://REPLACE-WITH-YOUR-VERCEL-PROJECT.vercel.app";</script>
 <script src="content-parser.js"></script>
 <script src="edit.js"></script>
 </body>

@@ -1,20 +1,15 @@
 // Section-based content editor — builds a sidebar of content.md's sections,
 // shows one section's fields at a time, supports drag-to-reorder, and
 // add/rename/delete sections. On save, re-serializes everything (via
-// content-parser.js's serializeContent) and commits it straight to GitHub
-// using a personal access token the client enters once. No backend: the
-// browser talks directly to GitHub's API, and the token is kept only in
-// this browser's localStorage, never sent anywhere but api.github.com.
+// content-parser.js's serializeContent) and POSTs it to the save-content
+// Vercel function (window.EDIT_API_BASE), which checks the shared password
+// server-side and commits the result straight to GitHub.
 
-const GITHUB_OWNER = 'MontaniConnect';
-const GITHUB_REPO = 'paglaum-site';
-const GITHUB_BRANCH = 'main';
-const GITHUB_FILE_PATH = 'content.md';
-const TOKEN_STORAGE_KEY = 'paglaum_gh_token';
+const PASSWORD_STORAGE_KEY = 'paglaum_edit_password';
 
 const SITE_SETTINGS_KEY = '__site__';
 
-let githubToken = null;
+let sharedPassword = null;
 let contentData = null;
 let sectionOrder = [];
 let activeKey = SITE_SETTINGS_KEY;
@@ -32,36 +27,36 @@ const panel = document.getElementById('section-panel');
 const statusEl = document.getElementById('status');
 const logoutLink = document.getElementById('logout-link');
 
-function unlock(token) {
-  if (!token) {
-    gateError.textContent = 'Paste a GitHub token first.';
+function unlock(password) {
+  if (!password) {
+    gateError.textContent = 'Enter the password first.';
     return;
   }
-  githubToken = token;
+  sharedPassword = password;
   gate.style.display = 'none';
   app.style.display = 'flex';
   loadContent();
 }
 
 gateSubmit.addEventListener('click', () => {
-  const token = gatePassword.value.trim();
-  if (token) {
-    try { localStorage.setItem(TOKEN_STORAGE_KEY, token); } catch { /* storage may be unavailable; still works for this session */ }
+  const password = gatePassword.value.trim();
+  if (password) {
+    try { localStorage.setItem(PASSWORD_STORAGE_KEY, password); } catch { /* storage may be unavailable; still works for this session */ }
   }
-  unlock(token);
+  unlock(password);
 });
 gatePassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') gateSubmit.click(); });
 
 logoutLink.addEventListener('click', (e) => {
   e.preventDefault();
-  try { localStorage.removeItem(TOKEN_STORAGE_KEY); } catch { /* ignore */ }
+  try { localStorage.removeItem(PASSWORD_STORAGE_KEY); } catch { /* ignore */ }
   location.reload();
 });
 
-// Auto-unlock if a token is already remembered in this browser.
+// Auto-unlock if a password is already remembered in this browser.
 (function tryAutoUnlock() {
   let remembered = null;
-  try { remembered = localStorage.getItem(TOKEN_STORAGE_KEY); } catch { /* ignore */ }
+  try { remembered = localStorage.getItem(PASSWORD_STORAGE_KEY); } catch { /* ignore */ }
   if (remembered) unlock(remembered);
 })();
 
@@ -336,45 +331,6 @@ function renderPanel() {
   }
 }
 
-// UTF-8-safe base64 encoding (plain btoa mangles non-ASCII characters like — or ₱).
-function utf8ToBase64(str) {
-  const bytes = new TextEncoder().encode(str);
-  let binary = '';
-  bytes.forEach(b => { binary += String.fromCharCode(b); });
-  return btoa(binary);
-}
-
-async function saveToGitHub(content, token) {
-  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
-  const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
-
-  let sha;
-  const getResp = await fetch(`${apiUrl}?ref=${GITHUB_BRANCH}`, { headers });
-  if (getResp.ok) {
-    sha = (await getResp.json()).sha;
-  } else if (getResp.status !== 404) {
-    const err = await getResp.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub lookup failed (${getResp.status})`);
-  }
-
-  const putResp = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: 'Update site content via editor',
-      content: utf8ToBase64(content),
-      branch: GITHUB_BRANCH,
-      ...(sha ? { sha } : {}),
-    }),
-  });
-  if (!putResp.ok) {
-    const err = await putResp.json().catch(() => ({}));
-    throw new Error(err.message || `GitHub commit failed (${putResp.status})`);
-  }
-  const result = await putResp.json();
-  return result.commit && result.commit.html_url;
-}
-
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   const saveBtn = form.querySelector('button[type="submit"]');
@@ -384,15 +340,21 @@ form.addEventListener('submit', (e) => {
 
   const text = serializeContent(contentData, sectionOrder);
 
-  saveToGitHub(text, githubToken)
-    .then(() => {
+  fetch(window.EDIT_API_BASE.replace(/\/$/, '') + '/api/save-content', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: sharedPassword, content: text }),
+  })
+    .then(async (r) => {
+      const result = await r.json().catch(() => ({}));
+      if (!r.ok || !result.ok) throw new Error(result.error || ('Save failed (' + r.status + ')'));
       statusEl.className = 'ok';
       statusEl.textContent = 'Saved! The live site will update in about a minute.';
     })
     .catch((err) => {
       statusEl.className = 'err';
       statusEl.textContent = 'Error: ' + err.message +
-        (/bad credentials/i.test(err.message) ? ' — your token may be wrong or expired. Click "Log out" and paste a new one.' : '');
+        (/wrong password/i.test(err.message) ? ' Click "Log out" and try again.' : '');
     })
     .finally(() => {
       saveBtn.disabled = false;
