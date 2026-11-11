@@ -10,7 +10,7 @@ website: https://missionariesoftheassumption.org
 website_label: missionariesoftheassumption.org
 footer_tagline: PAGLAUM — Philanthropic Development Office, Missionaries of the Assumption. Channeling God's blessings to communities across Mindanao since 1989.
 copyright: © 2026 Missionaries of the Assumption
-section_order: hero,about,appeal,programs,impact,advocacy,stories,give,contact
+section_order: about,hero,appeal,programs,impact,advocacy,stories,give,contact
 ---
 
 <!--
@@ -25,17 +25,17 @@ section_order: hero,about,appeal,programs,impact,advocacy,stories,give,contact
   - image: values are filenames inside the images/ folder.
 -->
 
-## Hero
-
-headline: Together, we bring hope to communities
-subheadline: Be the hope. Join the mission.
-cta: Donate now
-
 ## About
 
 PAGLAUM — Philanthropic Development Office of the Missionaries of the Assumption — serves as the channel of resources of God's blessings for the various ministries and apostolates of the Missionaries of the Assumption.
 
 Founded in 1989 and based in Davao City, we carry that mission into the field — **disaster relief, livelihood support, Lumad education, and advocacy for the poor, for women and children, and for the Earth.**
+
+## Hero
+
+headline: Together, we bring hope to communities test
+subheadline: Be the hope. Join the mission.
+cta: Donate now
 
 ## Appeal
 
