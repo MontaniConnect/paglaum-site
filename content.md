@@ -27,7 +27,7 @@ section_order: hero,about,appeal,programs,impact,advocacy,stories,give,contact
 
 ## Hero
 
-headline: Together, we bring hope to communities
+headline: Together, we bring hope to communities test
 subheadline: Be the hope. Join the mission.
 cta: Donate now
 
